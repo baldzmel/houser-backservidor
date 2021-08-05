@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
 {
@@ -44,6 +45,9 @@ class UsersController extends Controller
             }
         }
 
+        if(isset($data['password'])){
+            $data['password'] = Hash::make($data['password']);
+        }
         $user->update($data);
 
         if(isset($oldImg) && !empty($oldImg)) {

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\api;
 //use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Users;
+use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
@@ -36,10 +39,10 @@ class UsersController extends Controller
         $user = Users::findOrFail($id);
         $data = $request->all();
 
-        if($request->image) {
-            $nameImg = date('YmdHis') . "." . $request->image->extension();
+        if($request->avatar) {
+            $nameImg = date('YmdHis') . "." . $request->avatar->extension();
             $request->file('avatar')->move(public_path('/imgs/'), $nameImg);
-            $data['image'] = $nameImg;
+            $data['avatar'] = $nameImg;
             if ($user->image !== 'avatar.png') {
                 $oldImg = $user->image;
             }
@@ -60,6 +63,8 @@ class UsersController extends Controller
             'message' => "Tus datos han sido actualizados con éxito."
         ]);
     }
+
+
 
 
 }

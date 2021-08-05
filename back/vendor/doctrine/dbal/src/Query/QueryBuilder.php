@@ -10,7 +10,6 @@ use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Statement;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\Deprecations\Deprecation;
 
 use function array_key_exists;
 use function array_keys;
@@ -84,7 +83,7 @@ class QueryBuilder
     /**
      * The complete SQL string for this query.
      *
-     * @var string|null
+     * @var string
      */
     private $sql;
 
@@ -121,7 +120,7 @@ class QueryBuilder
      *
      * @var int
      */
-    private $firstResult = 0;
+    private $firstResult;
 
     /**
      * The maximum number of results to retrieve or NULL to retrieve all results.
@@ -199,135 +198,7 @@ class QueryBuilder
     }
 
     /**
-     * Prepares and executes an SQL query and returns the first row of the result
-     * as an associative array.
-     *
-     * @return array<string, mixed>|false False is returned if no rows are found.
-     *
-     * @throws Exception
-     */
-    public function fetchAssociative()
-    {
-        return $this->connection->fetchAssociative($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the first row of the result
-     * as a numerically indexed array.
-     *
-     * @return array<int, mixed>|false False is returned if no rows are found.
-     *
-     * @throws Exception
-     */
-    public function fetchNumeric()
-    {
-        return $this->connection->fetchNumeric($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the value of a single column
-     * of the first row of the result.
-     *
-     * @return mixed|false False is returned if no rows are found.
-     *
-     * @throws Exception
-     */
-    public function fetchOne()
-    {
-        return $this->connection->fetchOne($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the result as an array of numeric arrays.
-     *
-     * @return array<int,array<int,mixed>>
-     *
-     * @throws Exception
-     */
-    public function fetchAllNumeric(): array
-    {
-        return $this->connection->fetchAllNumeric($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the result as an array of associative arrays.
-     *
-     * @return array<int,array<string,mixed>>
-     *
-     * @throws Exception
-     */
-    public function fetchAllAssociative(): array
-    {
-        return $this->connection->fetchAllAssociative($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the result as an associative array with the keys
-     * mapped to the first column and the values mapped to the second column.
-     *
-     * @return array<mixed,mixed>
-     *
-     * @throws Exception
-     */
-    public function fetchAllKeyValue(): array
-    {
-        return $this->connection->fetchAllKeyValue($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the result as an associative array with the keys mapped
-     * to the first column and the values being an associative array representing the rest of the columns
-     * and their values.
-     *
-     * @return array<mixed,array<string,mixed>>
-     *
-     * @throws Exception
-     */
-    public function fetchAllAssociativeIndexed(): array
-    {
-        return $this->connection->fetchAllAssociativeIndexed($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Prepares and executes an SQL query and returns the result as an array of the first column values.
-     *
-     * @return array<int,mixed>
-     *
-     * @throws Exception
-     */
-    public function fetchFirstColumn(): array
-    {
-        return $this->connection->fetchFirstColumn($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Executes an SQL query (SELECT) and returns a Result.
-     *
-     * @throws Exception
-     */
-    public function executeQuery(): Result
-    {
-        return $this->connection->executeQuery($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
-     * Executes an SQL statement and returns the number of affected rows.
-     *
-     * Should be used for INSERT, UPDATE and DELETE
-     *
-     * @return int The number of affected rows.
-     *
-     * @throws Exception
-     */
-    public function executeStatement(): int
-    {
-        return $this->connection->executeStatement($this->getSQL(), $this->params, $this->paramTypes);
-    }
-
-    /**
      * Executes this query using the bound parameters and their types.
-     *
-     * @deprecated Use {@link executeQuery()} or {@link executeStatement()} instead.
      *
      * @return Result|int
      *
@@ -336,20 +207,8 @@ class QueryBuilder
     public function execute()
     {
         if ($this->type === self::SELECT) {
-            Deprecation::trigger(
-                'doctrine/dbal',
-                'https://github.com/doctrine/dbal/pull/4578',
-                'QueryBuilder::execute() is deprecated, use QueryBuilder::executeQuery() for SQL queries instead.'
-            );
-
             return $this->connection->executeQuery($this->getSQL(), $this->params, $this->paramTypes);
         }
-
-        Deprecation::trigger(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/pull/4578',
-            'QueryBuilder::execute() is deprecated, use QueryBuilder::executeStatement() for SQL statements instead.'
-        );
 
         return $this->connection->executeStatement($this->getSQL(), $this->params, $this->paramTypes);
     }
@@ -410,7 +269,7 @@ class QueryBuilder
      *
      * @param int|string           $key   Parameter position or name
      * @param mixed                $value Parameter value
-     * @param int|string|Type|null $type  Parameter type
+     * @param int|string|Type|null $type  One of the {@link ParameterType} constants or DBAL type
      *
      * @return $this This QueryBuilder instance.
      */
@@ -624,15 +483,6 @@ class QueryBuilder
             return $this;
         }
 
-        if (is_array($select)) {
-            Deprecation::trigger(
-                'doctrine/dbal',
-                'https://github.com/doctrine/dbal/issues/3837',
-                'Passing an array for the first argument to QueryBuilder::select() is deprecated, ' .
-                'pass each value as an individual variadic argument instead.'
-            );
-        }
-
         $selects = is_array($select) ? $select : func_get_args();
 
         return $this->add('select', $selects);
@@ -681,15 +531,6 @@ class QueryBuilder
 
         if ($select === null) {
             return $this;
-        }
-
-        if (is_array($select)) {
-            Deprecation::trigger(
-                'doctrine/dbal',
-                'https://github.com/doctrine/dbal/issues/3837',
-                'Passing an array for the first argument to QueryBuilder::addSelect() is deprecated, ' .
-                'pass each value as an individual variadic argument instead.'
-            );
         }
 
         $selects = is_array($select) ? $select : func_get_args();
@@ -1064,15 +905,6 @@ class QueryBuilder
             return $this;
         }
 
-        if (is_array($groupBy)) {
-            Deprecation::trigger(
-                'doctrine/dbal',
-                'https://github.com/doctrine/dbal/issues/3837',
-                'Passing an array for the first argument to QueryBuilder::groupBy() is deprecated, ' .
-                'pass each value as an individual variadic argument instead.'
-            );
-        }
-
         $groupBy = is_array($groupBy) ? $groupBy : func_get_args();
 
         return $this->add('groupBy', $groupBy, false);
@@ -1100,15 +932,6 @@ class QueryBuilder
     {
         if (is_array($groupBy) && count($groupBy) === 0) {
             return $this;
-        }
-
-        if (is_array($groupBy)) {
-            Deprecation::trigger(
-                'doctrine/dbal',
-                'https://github.com/doctrine/dbal/issues/3837',
-                'Passing an array for the first argument to QueryBuilder::addGroupBy() is deprecated, ' .
-                'pass each value as an individual variadic argument instead.'
-            );
         }
 
         $groupBy = is_array($groupBy) ? $groupBy : func_get_args();
@@ -1390,7 +1213,7 @@ class QueryBuilder
      */
     private function isLimitQuery()
     {
-        return $this->maxResults !== null || $this->firstResult !== 0;
+        return $this->maxResults !== null || $this->firstResult !== null;
     }
 
     /**

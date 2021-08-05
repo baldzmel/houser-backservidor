@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 
 class PackageSorter
@@ -21,15 +22,15 @@ class PackageSorter
      *
      * Packages of equal weight retain the original order
      *
-     * @param  PackageInterface[] $packages
-     * @return PackageInterface[] sorted array
+     * @param  array $packages
+     * @return array
      */
     public static function sortPackages(array $packages)
     {
         $usageList = array();
 
-        foreach ($packages as $package) {
-            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) {
+        foreach ($packages as $package) { /** @var PackageInterface $package */
+            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) { /** @var Link $link */
                 $target = $link->getTarget();
                 $usageList[$target][] = $package->getName();
             }

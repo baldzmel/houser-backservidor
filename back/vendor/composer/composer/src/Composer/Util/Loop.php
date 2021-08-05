@@ -76,7 +76,9 @@ class Loop
 
         if ($progress) {
             $totalJobs = 0;
-            $totalJobs += $this->httpDownloader->countActiveJobs();
+            if ($this->httpDownloader) {
+                $totalJobs += $this->httpDownloader->countActiveJobs();
+            }
             if ($this->processExecutor) {
                 $totalJobs += $this->processExecutor->countActiveJobs();
             }
@@ -87,7 +89,9 @@ class Loop
         while (true) {
             $activeJobs = 0;
 
-            $activeJobs += $this->httpDownloader->countActiveJobs();
+            if ($this->httpDownloader) {
+                $activeJobs += $this->httpDownloader->countActiveJobs();
+            }
             if ($this->processExecutor) {
                 $activeJobs += $this->processExecutor->countActiveJobs();
             }
@@ -104,7 +108,7 @@ class Loop
 
         // as we skip progress updates if they are too quick, make sure we do one last one here at 100%
         if ($progress) {
-            $progress->finish();
+            $progress->setProgress($progress->getMaxSteps());
         }
 
         unset($this->currentPromises[$waitIndex]);

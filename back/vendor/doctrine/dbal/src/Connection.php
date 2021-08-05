@@ -21,7 +21,6 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\SQL\Parser;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\Deprecations\Deprecation;
 use Throwable;
 use Traversable;
 
@@ -36,8 +35,6 @@ use function key;
 /**
  * A database abstraction-level connection that implements features like events, transaction isolation levels,
  * configuration, emulated transaction nesting, lazy connecting and more.
- *
- * @psalm-import-type Params from DriverManager
  */
 class Connection
 {
@@ -69,11 +66,7 @@ class Connection
     /** @var EventManager */
     protected $_eventManager;
 
-    /**
-     * @deprecated Use {@link createExpressionBuilder()} instead.
-     *
-     * @var ExpressionBuilder
-     */
+    /** @var ExpressionBuilder */
     protected $_expr;
 
     /**
@@ -91,9 +84,9 @@ class Connection
     private $transactionNestingLevel = 0;
 
     /**
-     * The currently active transaction isolation level or NULL before it has been determined.
+     * The currently active transaction isolation level.
      *
-     * @var int|null
+     * @var int
      */
     private $transactionIsolationLevel;
 
@@ -107,16 +100,15 @@ class Connection
     /**
      * The parameters used during creation of the Connection instance.
      *
-     * @var array<string,mixed>
-     * @phpstan-var array<string,mixed>
-     * @psalm-var Params
+     * @var mixed[]
      */
-    private $params;
+    private $params = [];
 
     /**
-     * The database platform object used by the connection or NULL before it's initialized.
+     * The DatabasePlatform object that provides information about the
+     * database platform used by the connection.
      *
-     * @var AbstractPlatform|null
+     * @var AbstractPlatform
      */
     private $platform;
 
@@ -128,8 +120,6 @@ class Connection
 
     /**
      * The schema manager.
-     *
-     * @deprecated Use {@link createSchemaManager()} instead.
      *
      * @var AbstractSchemaManager|null
      */
@@ -154,12 +144,10 @@ class Connection
      *
      * @internal The connection can be only instantiated by the driver manager.
      *
-     * @param array<string,mixed> $params       The connection parameters.
-     * @param Driver              $driver       The driver to use.
-     * @param Configuration|null  $config       The configuration, optional.
-     * @param EventManager|null   $eventManager The event manager, optional.
-     * @psalm-param Params $params
-     * @phpstan-param array<string,mixed> $params
+     * @param mixed[]            $params       The connection parameters.
+     * @param Driver             $driver       The driver to use.
+     * @param Configuration|null $config       The configuration, optional.
+     * @param EventManager|null  $eventManager The event manager, optional.
      *
      * @throws Exception
      */
@@ -192,7 +180,7 @@ class Connection
         $this->_config       = $config;
         $this->_eventManager = $eventManager;
 
-        $this->_expr = $this->createExpressionBuilder();
+        $this->_expr = new Query\Expression\ExpressionBuilder($this);
 
         $this->autoCommit = $config->getAutoCommit();
     }
@@ -202,9 +190,7 @@ class Connection
      *
      * @internal
      *
-     * @return array<string,mixed>
-     * @psalm-return Params
-     * @phpstan-return array<string,mixed>
+     * @return mixed[]
      */
     public function getParams()
     {
@@ -271,37 +257,19 @@ class Connection
     public function getDatabasePlatform()
     {
         if ($this->platform === null) {
-            $this->platform = $this->detectDatabasePlatform();
-            $this->platform->setEventManager($this->_eventManager);
+            $this->detectDatabasePlatform();
         }
 
         return $this->platform;
     }
 
     /**
-     * Creates an expression builder for the connection.
-     */
-    public function createExpressionBuilder(): ExpressionBuilder
-    {
-        return new ExpressionBuilder($this);
-    }
-
-    /**
      * Gets the ExpressionBuilder for the connection.
-     *
-     * @deprecated Use {@link createExpressionBuilder()} instead.
      *
      * @return ExpressionBuilder
      */
     public function getExpressionBuilder()
     {
-        Deprecation::triggerIfCalledFromOutside(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4515',
-            'Connection::getExpressionBuilder() is deprecated,'
-                . ' use Connection::createExpressionBuilder() instead.'
-        );
-
         return $this->_expr;
     }
 
@@ -346,17 +314,19 @@ class Connection
      *
      * @throws Exception If an invalid platform was specified for this connection.
      */
-    private function detectDatabasePlatform(): AbstractPlatform
+    private function detectDatabasePlatform(): void
     {
         $version = $this->getDatabasePlatformVersion();
 
         if ($version !== null) {
             assert($this->_driver instanceof VersionAwarePlatformDriver);
 
-            return $this->_driver->createDatabasePlatformForVersion($version);
+            $this->platform = $this->_driver->createDatabasePlatformForVersion($version);
+        } else {
+            $this->platform = $this->_driver->getDatabasePlatform();
         }
 
-        return $this->_driver->getDatabasePlatform();
+        $this->platform->setEventManager($this->_eventManager);
     }
 
     /**
@@ -394,21 +364,23 @@ class Connection
 
                 // The database to connect to might not yet exist.
                 // Retry detection without database name connection parameter.
-                $params = $this->params;
-
-                unset($this->params['dbname']);
+                $databaseName           = $this->params['dbname'];
+                $this->params['dbname'] = null;
 
                 try {
                     $this->connect();
                 } catch (Exception $fallbackException) {
                     // Either the platform does not support database-less connections
                     // or something else went wrong.
+                    // Reset connection parameters and rethrow the original exception.
+                    $this->params['dbname'] = $databaseName;
+
                     throw $originalException;
-                } finally {
-                    $this->params = $params;
                 }
 
-                $serverVersion = $this->getServerVersion();
+                // Reset connection parameters.
+                $this->params['dbname'] = $databaseName;
+                $serverVersion          = $this->getServerVersion();
 
                 // Close "temporary" connection to allow connecting to the real database again.
                 $this->close();
@@ -577,10 +549,10 @@ class Connection
     /**
      * Adds condition based on the criteria to the query components
      *
-     * @param array<string,mixed> $criteria   Map of key columns to their values
-     * @param string[]            $columns    Column names
-     * @param mixed[]             $values     Column values
-     * @param string[]            $conditions Key conditions
+     * @param mixed[]  $criteria   Map of key columns to their values
+     * @param string[] $columns    Column names
+     * @param mixed[]  $values     Column values
+     * @param string[] $conditions Key conditions
      *
      * @throws Exception
      */
@@ -864,9 +836,9 @@ class Connection
      * to the first column and the values being an associative array representing the rest of the columns
      * and their values.
      *
-     * @param string                                                               $query  SQL query
-     * @param list<mixed>|array<string, mixed>                                     $params Query parameters
-     * @param array<int, int|string|Type|null>|array<string, int|string|Type|null> $types  Parameter types
+     * @param string                                           $query  SQL query
+     * @param list<mixed>|array<string, mixed>                 $params Query parameters
+     * @param array<int, int|string>|array<string, int|string> $types  Parameter types
      *
      * @return array<mixed,array<string,mixed>>
      *
@@ -1455,13 +1427,11 @@ class Connection
      */
     public function createSavepoint($savepoint)
     {
-        $platform = $this->getDatabasePlatform();
-
-        if (! $platform->supportsSavepoints()) {
+        if (! $this->getDatabasePlatform()->supportsSavepoints()) {
             throw ConnectionException::savepointsNotSupported();
         }
 
-        $this->executeStatement($platform->createSavePoint($savepoint));
+        $this->executeStatement($this->platform->createSavePoint($savepoint));
     }
 
     /**
@@ -1475,17 +1445,15 @@ class Connection
      */
     public function releaseSavepoint($savepoint)
     {
-        $platform = $this->getDatabasePlatform();
-
-        if (! $platform->supportsSavepoints()) {
+        if (! $this->getDatabasePlatform()->supportsSavepoints()) {
             throw ConnectionException::savepointsNotSupported();
         }
 
-        if (! $platform->supportsReleaseSavepoints()) {
+        if (! $this->platform->supportsReleaseSavepoints()) {
             return;
         }
 
-        $this->executeStatement($platform->releaseSavePoint($savepoint));
+        $this->executeStatement($this->platform->releaseSavePoint($savepoint));
     }
 
     /**
@@ -1499,13 +1467,11 @@ class Connection
      */
     public function rollbackSavepoint($savepoint)
     {
-        $platform = $this->getDatabasePlatform();
-
-        if (! $platform->supportsSavepoints()) {
+        if (! $this->getDatabasePlatform()->supportsSavepoints()) {
             throw ConnectionException::savepointsNotSupported();
         }
 
-        $this->executeStatement($platform->rollbackSavePoint($savepoint));
+        $this->executeStatement($this->platform->rollbackSavePoint($savepoint));
     }
 
     /**
@@ -1525,24 +1491,8 @@ class Connection
     }
 
     /**
-     * Creates a SchemaManager that can be used to inspect or change the
-     * database schema through the connection.
-     *
-     * @throws Exception
-     */
-    public function createSchemaManager(): AbstractSchemaManager
-    {
-        return $this->_driver->getSchemaManager(
-            $this,
-            $this->getDatabasePlatform()
-        );
-    }
-
-    /**
      * Gets the SchemaManager that can be used to inspect or change the
      * database schema through the connection.
-     *
-     * @deprecated Use {@link createSchemaManager()} instead.
      *
      * @return AbstractSchemaManager
      *
@@ -1550,14 +1500,11 @@ class Connection
      */
     public function getSchemaManager()
     {
-        Deprecation::triggerIfCalledFromOutside(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4515',
-            'Connection::getSchemaManager() is deprecated, use Connection::createSchemaManager() instead.'
-        );
-
         if ($this->_schemaManager === null) {
-            $this->_schemaManager = $this->createSchemaManager();
+            $this->_schemaManager = $this->_driver->getSchemaManager(
+                $this,
+                $this->getDatabasePlatform()
+            );
         }
 
         return $this->_schemaManager;

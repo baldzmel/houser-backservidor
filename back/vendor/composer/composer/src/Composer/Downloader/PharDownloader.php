@@ -34,7 +34,5 @@ class PharDownloader extends ArchiveDownloader
          * https://github.com/koto/phar-util
          * http://blog.kotowicz.net/2010/08/hardening-php-how-to-securely-include.html
          */
-
-        return \React\Promise\resolve();
     }
 }

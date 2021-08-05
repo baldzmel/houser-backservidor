@@ -35,6 +35,8 @@ use RuntimeException;
  */
 class Auth extends Facade
 {
+//    const User = ;
+
     /**
      * Get the registered name of the component.
      *
@@ -50,8 +52,6 @@ class Auth extends Facade
      *
      * @param  array  $options
      * @return void
-     *
-     * @throws \RuntimeException
      */
     public static function routes(array $options = [])
     {

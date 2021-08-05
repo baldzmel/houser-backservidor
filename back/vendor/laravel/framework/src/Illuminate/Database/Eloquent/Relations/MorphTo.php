@@ -231,14 +231,8 @@ class MorphTo extends BelongsTo
      */
     public function associate($model)
     {
-        if ($model instanceof Model) {
-            $foreignKey = $this->ownerKey && $model->{$this->ownerKey}
-                            ? $this->ownerKey
-                            : $model->getKeyName();
-        }
-
         $this->parent->setAttribute(
-            $this->foreignKey, $model instanceof Model ? $model->{$foreignKey} : null
+            $this->foreignKey, $model instanceof Model ? $model->{$this->ownerKey ?: $model->getKeyName()} : null
         );
 
         $this->parent->setAttribute(

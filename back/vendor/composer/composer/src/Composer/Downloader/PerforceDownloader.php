@@ -29,7 +29,6 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
-        return \React\Promise\resolve();
     }
 
     /**
@@ -48,8 +47,6 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->connectClient();
         $this->perforce->syncCodeBase($label);
         $this->perforce->cleanupClientSpec();
-
-        return \React\Promise\resolve();
     }
 
     private function getLabelFromSourceReference($ref)
@@ -88,7 +85,7 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
-        return $this->doInstall($target, $path, $url);
+        $this->doInstall($target, $path, $url);
     }
 
     /**
@@ -97,8 +94,6 @@ class PerforceDownloader extends VcsDownloader
     public function getLocalChanges(PackageInterface $package, $path)
     {
         $this->io->writeError('Perforce driver does not check for local changes before overriding');
-
-        return null;
     }
 
     /**

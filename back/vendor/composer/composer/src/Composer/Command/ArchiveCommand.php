@@ -16,7 +16,6 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Composer;
-use Composer\Package\CompletePackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Script\ScriptEvents;
@@ -141,9 +140,6 @@ EOT
         return 0;
     }
 
-    /**
-     * @return CompletePackageInterface|false
-     */
     protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {
         $io->writeError('<info>Searching for the specified package.</info>');
@@ -173,10 +169,6 @@ EOT
             $io->writeError('<error>Could not find a package matching '.$packageName.'.</error>');
 
             return false;
-        }
-
-        if (!$package instanceof CompletePackageInterface) {
-            throw new \LogicException('Expected a CompletePackageInterface instance but found '.get_class($package));
         }
 
         return $package;

@@ -6,7 +6,6 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\Deprecations\Deprecation;
 
 use function array_change_key_case;
 use function array_filter;
@@ -33,13 +32,11 @@ use const CASE_LOWER;
  */
 class PostgreSQLSchemaManager extends AbstractSchemaManager
 {
-    /** @var string[]|null */
+    /** @var string[] */
     private $existingSchemaPaths;
 
     /**
      * Gets all the existing schema names.
-     *
-     * @deprecated Use {@link listSchemaNames()} instead.
      *
      * @return string[]
      *
@@ -47,28 +44,8 @@ class PostgreSQLSchemaManager extends AbstractSchemaManager
      */
     public function getSchemaNames()
     {
-        Deprecation::trigger(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4503',
-            'PostgreSQLSchemaManager::getSchemaNames() is deprecated,'
-                . ' use PostgreSQLSchemaManager::listSchemaNames() instead.'
-        );
-
-        return $this->listNamespaceNames();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function listSchemaNames(): array
-    {
         return $this->_conn->fetchFirstColumn(
-            <<<'SQL'
-SELECT schema_name
-FROM   information_schema.schemata
-WHERE  schema_name NOT LIKE 'pg\_%'
-AND    schema_name != 'information_schema'
-SQL
+            "SELECT nspname FROM pg_namespace WHERE nspname !~ '^pg_.*' AND nspname != 'information_schema'"
         );
     }
 
@@ -96,8 +73,6 @@ SQL
      *
      * This is a PostgreSQL only function.
      *
-     * @internal The method should be only used from within the PostgreSQLSchemaManager class hierarchy.
-     *
      * @return string[]
      */
     public function getExistingSchemaSearchPaths()
@@ -114,13 +89,11 @@ SQL
      *
      * This is a PostgreSQL only function.
      *
-     * @internal The method should be only used from within the PostgreSQLSchemaManager class hierarchy.
-     *
      * @return void
      */
     public function determineExistingSchemaSearchPaths()
     {
-        $names = $this->listSchemaNames();
+        $names = $this->getSchemaNames();
         $paths = $this->getSchemaSearchPaths();
 
         $this->existingSchemaPaths = array_filter($paths, static function ($v) use ($names): bool {
@@ -294,18 +267,9 @@ SQL
 
     /**
      * {@inheritdoc}
-     *
-     * @deprecated Use {@link listSchemaNames()} instead.
      */
     protected function getPortableNamespaceDefinition(array $namespace)
     {
-        Deprecation::triggerIfCalledFromOutside(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4503',
-            'PostgreSQLSchemaManager::getPortableNamespaceDefinition() is deprecated,'
-                . ' use PostgreSQLSchemaManager::listSchemaNames() instead.'
-        );
-
         return $namespace['nspname'];
     }
 

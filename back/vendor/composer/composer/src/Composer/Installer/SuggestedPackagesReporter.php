@@ -98,10 +98,10 @@ class SuggestedPackagesReporter
      *
      * Do not list the ones already installed if installed repository provided.
      *
-     * @param  int                      $mode             One of the MODE_* constants from this class
-     * @param  InstalledRepository|null $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
-     * @return void
+     * @param  int                       $mode             One of the MODE_* constants from this class
+     * @param  InstalledRepository|null  $installedRepo    If passed in, suggested packages which are installed already will be skipped
+     * @param  PackageInterface|null     $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
+     * @return SuggestedPackagesReporter
      */
     public function output($mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
     {
@@ -122,7 +122,7 @@ class SuggestedPackagesReporter
                 $this->io->write(sprintf('<info>%s</info>', $name));
             }
 
-            return;
+            return 0;
         }
 
         // Grouped by package
@@ -160,14 +160,16 @@ class SuggestedPackagesReporter
                 $this->io->write('<info>'.$diff.' additional suggestions</info> by transitive dependencies can be shown with <info>--all</info>');
             }
         }
+
+        return $this;
     }
 
     /**
      * Output number of new suggested packages and a hint to use suggest command.
      *
-     * @param  InstalledRepository|null $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
-     * @return void
+     * @param  InstalledRepository|null  $installedRepo    If passed in, suggested packages which are installed already will be skipped
+     * @param  PackageInterface|null     $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
+     * @return SuggestedPackagesReporter
      */
     public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
     {
@@ -175,6 +177,8 @@ class SuggestedPackagesReporter
         if ($suggestedPackages) {
             $this->io->writeError('<info>'.count($suggestedPackages).' package suggestions were added by new dependencies, use `composer suggest` to see details.</info>');
         }
+
+        return $this;
     }
 
     /**

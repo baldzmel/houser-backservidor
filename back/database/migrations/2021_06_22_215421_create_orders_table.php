@@ -19,6 +19,7 @@ class CreateOrdersTable extends Migration
             $table->unsignedBigInteger('fk_service');
             $table->unsignedBigInteger('fk_user');
             $table->unsignedBigInteger('fk_houser');
+            $table->tinyInteger('rating')->default(0);
             $table->text('user_message');
             $table->text('houser_message')->nullable();
             $table->timestamp('read_at')->nullable();

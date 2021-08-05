@@ -17,7 +17,6 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
-use React\Promise\PromiseInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -38,7 +37,7 @@ class ProcessExecutor
     protected $io;
 
     /**
-     * @phpstan-var array<int, array<string, mixed>>
+     * @psalm-var array<int, array<string, mixed>>
      */
     private $jobs = array();
     private $runningJobs = 0;
@@ -142,9 +141,9 @@ class ProcessExecutor
     /**
      * starts a process on the commandline in async mode
      *
-     * @param  string           $command the command to execute
-     * @param  string           $cwd     the working directory
-     * @return PromiseInterface
+     * @param  string  $command the command to execute
+     * @param  string  $cwd     the working directory
+     * @return Promise
      */
     public function executeAsync($command, $cwd = null)
     {
@@ -251,36 +250,16 @@ class ProcessExecutor
             throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
         }
 
-        try {
-            // TODO in v3, commands should be passed in as arrays of cmd + args
-            if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-                $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
-            } else {
-                $process = new Process($command, $cwd, null, null, static::getTimeout());
-            }
-        } catch (\Exception $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
-        } catch (\Throwable $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
+        // TODO in v3, commands should be passed in as arrays of cmd + args
+        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+        } else {
+            $process = new Process($command, $cwd, null, null, static::getTimeout());
         }
 
         $job['process'] = $process;
 
-        try {
-            $process->start();
-        } catch (\Exception $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
-        } catch (\Throwable $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
-        }
+        $process->start();
     }
 
     public function wait($index = null)
@@ -387,17 +366,11 @@ class ProcessExecutor
         }
     }
 
-    /**
-     * @return int the timeout in seconds
-     */
     public static function getTimeout()
     {
         return static::$timeout;
     }
 
-    /**
-     * @param int $timeout the timeout in seconds
-     */
     public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;

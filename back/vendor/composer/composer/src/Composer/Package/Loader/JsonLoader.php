@@ -13,8 +13,6 @@
 namespace Composer\Package\Loader;
 
 use Composer\Json\JsonFile;
-use Composer\Package\CompletePackage;
-use Composer\Package\CompleteAliasPackage;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -29,8 +27,8 @@ class JsonLoader
     }
 
     /**
-     * @param  string|JsonFile                      $json A filename, json string or JsonFile instance to load the package from
-     * @return CompletePackage|CompleteAliasPackage
+     * @param  string|JsonFile                    $json A filename, json string or JsonFile instance to load the package from
+     * @return \Composer\Package\PackageInterface
      */
     public function load($json)
     {

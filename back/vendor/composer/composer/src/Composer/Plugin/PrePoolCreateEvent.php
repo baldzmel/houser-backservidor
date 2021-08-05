@@ -109,7 +109,7 @@ class PrePoolCreateEvent extends Event
 
     /**
      * @return array[] of package => version => [alias, alias_normalized]
-     * @phpstan-return array<string, array<string, array{alias: string, alias_normalized: string}>>
+     * @psalm-return array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     public function getRootAliases()
     {

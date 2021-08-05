@@ -52,7 +52,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         if (realpath($path) === $realUrl) {
-            return \React\Promise\resolve();
+            return;
         }
 
         if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
@@ -67,8 +67,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $realUrl
             ));
         }
-
-        return \React\Promise\resolve();
     }
 
     /**
@@ -82,16 +80,39 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if (realpath($path) === $realUrl) {
             if ($output) {
-                $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
+                $this->io->writeError("  - " . InstallOperation::format($package).': Source already present');
+            } else {
+                $this->io->writeError('Source already present', false);
             }
 
-            return \React\Promise\resolve();
+            return;
         }
 
         // Get the transport options with default values
-        $transportOptions = $package->getTransportOptions() + array('relative' => true);
+        $transportOptions = $package->getTransportOptions() + array('symlink' => null, 'relative' => true);
 
-        list($currentStrategy, $allowedStrategies) = $this->computeAllowedStrategies($transportOptions);
+        // When symlink transport option is null, both symlink and mirror are allowed
+        $currentStrategy = self::STRATEGY_SYMLINK;
+        $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
+
+        $mirrorPathRepos = getenv('COMPOSER_MIRROR_PATH_REPOS');
+        if ($mirrorPathRepos) {
+            $currentStrategy = self::STRATEGY_MIRROR;
+        }
+
+        if (true === $transportOptions['symlink']) {
+            $currentStrategy = self::STRATEGY_SYMLINK;
+            $allowedStrategies = array(self::STRATEGY_SYMLINK);
+        } elseif (false === $transportOptions['symlink']) {
+            $currentStrategy = self::STRATEGY_MIRROR;
+            $allowedStrategies = array(self::STRATEGY_MIRROR);
+        }
+
+        // Check we can use junctions safely if we are on Windows
+        if (Platform::isWindows() && self::STRATEGY_SYMLINK === $currentStrategy && !$this->safeJunctions()) {
+            $currentStrategy = self::STRATEGY_MIRROR;
+            $allowedStrategies = array(self::STRATEGY_MIRROR);
+        }
 
         $symfonyFilesystem = new SymfonyFilesystem();
         $this->filesystem->removeDirectory($path);
@@ -101,13 +122,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         $isFallback = false;
-        if (self::STRATEGY_SYMLINK === $currentStrategy) {
+        if (self::STRATEGY_SYMLINK == $currentStrategy) {
             try {
                 if (Platform::isWindows()) {
                     // Implement symlinks as NTFS junctions on Windows
-                    if ($output) {
-                        $this->io->writeError(sprintf('Junctioning from %s', $url), false);
-                    }
+                    $this->io->writeError(sprintf('Junctioning from %s', $url), false);
                     $this->filesystem->junction($realUrl, $path);
                 } else {
                     $absolutePath = $path;
@@ -116,9 +135,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
-                    if ($output) {
-                        $this->io->writeError(sprintf('Symlinking from %s', $url), false);
-                    }
+                    $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     if ($transportOptions['relative']) {
                         $symfonyFilesystem->symlink($shortestPath, $path);
                     } else {
@@ -127,10 +144,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 }
             } catch (IOException $e) {
                 if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
-                    if ($output) {
-                        $this->io->writeError('');
-                        $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
-                    }
+                    $this->io->writeError('');
+                    $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
                     $currentStrategy = self::STRATEGY_MIRROR;
                     $isFallback = true;
                 } else {
@@ -140,12 +155,10 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         // Fallback if symlink failed or if symlink is not allowed for the package
-        if (self::STRATEGY_MIRROR === $currentStrategy) {
+        if (self::STRATEGY_MIRROR == $currentStrategy) {
             $realUrl = $this->filesystem->normalizePath($realUrl);
 
-            if ($output) {
-                $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
-            }
+            $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
             $iterator = new ArchivableFilesFinder($realUrl, array());
             $symfonyFilesystem->mirror($realUrl, $path, $iterator);
         }
@@ -153,8 +166,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if ($output) {
             $this->io->writeError('');
         }
-
-        return \React\Promise\resolve();
     }
 
     /**
@@ -180,19 +191,13 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
-
-            return \React\Promise\resolve();
-        }
-
-        if (realpath($path) === realpath($package->getDistUrl())) {
+        } elseif (realpath($path) === realpath($package->getDistUrl())) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
-
-            return \React\Promise\resolve();
+        } else {
+            parent::remove($package, $path, $output);
         }
-
-        return parent::remove($package, $path, $output);
     }
 
     /**
@@ -209,62 +214,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
             return $packageVersion['commit'];
         }
-
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getInstallOperationAppendix(PackageInterface $package, $path)
-    {
-        $realUrl = realpath($package->getDistUrl());
-
-        if (realpath($path) === $realUrl) {
-            return ': Source already present';
-        }
-
-        list($currentStrategy) = $this->computeAllowedStrategies($package->getTransportOptions());
-
-        if ($currentStrategy === self::STRATEGY_SYMLINK) {
-            if (Platform::isWindows()) {
-                return ': Junctioning from '.$package->getDistUrl();
-            }
-
-            return ': Symlinking from '.$package->getDistUrl();
-        }
-
-        return ': Mirroring from '.$package->getDistUrl();
-    }
-
-    private function computeAllowedStrategies(array $transportOptions)
-    {
-        // When symlink transport option is null, both symlink and mirror are allowed
-        $currentStrategy = self::STRATEGY_SYMLINK;
-        $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
-
-        $mirrorPathRepos = getenv('COMPOSER_MIRROR_PATH_REPOS');
-        if ($mirrorPathRepos) {
-            $currentStrategy = self::STRATEGY_MIRROR;
-        }
-
-        $symlinkOption = isset($transportOptions['symlink']) ? $transportOptions['symlink'] : null;
-
-        if (true === $symlinkOption) {
-            $currentStrategy = self::STRATEGY_SYMLINK;
-            $allowedStrategies = array(self::STRATEGY_SYMLINK);
-        } elseif (false === $symlinkOption) {
-            $currentStrategy = self::STRATEGY_MIRROR;
-            $allowedStrategies = array(self::STRATEGY_MIRROR);
-        }
-
-        // Check we can use junctions safely if we are on Windows
-        if (Platform::isWindows() && self::STRATEGY_SYMLINK === $currentStrategy && !$this->safeJunctions()) {
-            $currentStrategy = self::STRATEGY_MIRROR;
-            $allowedStrategies = array(self::STRATEGY_MIRROR);
-        }
-
-        return array($currentStrategy, $allowedStrategies);
     }
 
     /**

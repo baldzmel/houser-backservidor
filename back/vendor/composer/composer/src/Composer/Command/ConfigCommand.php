@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputInterface;
@@ -330,14 +329,6 @@ EOT
                     return $val;
                 },
             ),
-            'gitlab-protocol' => array(
-                function ($val) {
-                    return in_array($val, array('git', 'http', 'https'), true);
-                },
-                function ($val) {
-                    return $val;
-                },
-            ),
             'store-auths' => array(
                 function ($val) {
                     return in_array($val, array('true', 'false', 'prompt'), true);
@@ -390,7 +381,7 @@ EOT
             ),
             'bin-compat' => array(
                 function ($val) {
-                    return in_array($val, array('auto', 'full', 'symlink'));
+                    return in_array($val, array('auto', 'full'));
                 },
                 function ($val) {
                     return $val;
@@ -420,7 +411,7 @@ EOT
             'secure-http' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
                 function ($val) {
-                    return file_exists($val) && Filesystem::isReadable($val);
+                    return file_exists($val) && is_readable($val);
                 },
                 function ($val) {
                     return $val === 'null' ? null : $val;
@@ -428,7 +419,7 @@ EOT
             ),
             'capath' => array(
                 function ($val) {
-                    return is_dir($val) && Filesystem::isReadable($val);
+                    return is_dir($val) && is_readable($val);
                 },
                 function ($val) {
                     return $val === 'null' ? null : $val;

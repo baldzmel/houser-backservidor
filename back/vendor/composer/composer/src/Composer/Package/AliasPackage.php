@@ -18,7 +18,7 @@ use Composer\Package\Version\VersionParser;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class AliasPackage extends BasePackage
+class AliasPackage extends BasePackage implements CompletePackageInterface
 {
     protected $version;
     protected $prettyVersion;
@@ -27,7 +27,7 @@ class AliasPackage extends BasePackage
     protected $stability;
     protected $hasSelfVersionRequires = false;
 
-    /** @var BasePackage */
+    /** @var PackageInterface */
     protected $aliasOf;
     /** @var Link[] */
     protected $requires;
@@ -43,11 +43,11 @@ class AliasPackage extends BasePackage
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param BasePackage $aliasOf       The package this package is an alias of
-     * @param string      $version       The version the alias must report
-     * @param string      $prettyVersion The alias's non-normalized version
+     * @param PackageInterface $aliasOf       The package this package is an alias of
+     * @param string           $version       The version the alias must report
+     * @param string           $prettyVersion The alias's non-normalized version
      */
-    public function __construct(BasePackage $aliasOf, $version, $prettyVersion)
+    public function __construct(PackageInterface $aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf->getName());
 
@@ -64,7 +64,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * @return BasePackage
+     * @return PackageInterface
      */
     public function getAliasOf()
     {
@@ -210,11 +210,6 @@ class AliasPackage extends BasePackage
         return $this->hasSelfVersionRequires;
     }
 
-    public function __toString()
-    {
-        return parent::__toString().' ('.($this->rootPackageAlias ? 'root ' : ''). 'alias of '.$this->aliasOf->getVersion().')';
-    }
-
     /***************************************
      * Wrappers around the aliased package *
      ***************************************/
@@ -266,12 +261,12 @@ class AliasPackage extends BasePackage
 
     public function setSourceReference($reference)
     {
-        $this->aliasOf->setSourceReference($reference);
+        return $this->aliasOf->setSourceReference($reference);
     }
 
     public function setSourceMirrors($mirrors)
     {
-        $this->aliasOf->setSourceMirrors($mirrors);
+        return $this->aliasOf->setSourceMirrors($mirrors);
     }
 
     public function getSourceMirrors()
@@ -301,7 +296,7 @@ class AliasPackage extends BasePackage
 
     public function setDistReference($reference)
     {
-        $this->aliasOf->setDistReference($reference);
+        return $this->aliasOf->setDistReference($reference);
     }
 
     public function getDistSha1Checksum()
@@ -311,7 +306,7 @@ class AliasPackage extends BasePackage
 
     public function setTransportOptions(array $options)
     {
-        $this->aliasOf->setTransportOptions($options);
+        return $this->aliasOf->setTransportOptions($options);
     }
 
     public function getTransportOptions()
@@ -321,12 +316,22 @@ class AliasPackage extends BasePackage
 
     public function setDistMirrors($mirrors)
     {
-        $this->aliasOf->setDistMirrors($mirrors);
+        return $this->aliasOf->setDistMirrors($mirrors);
     }
 
     public function getDistMirrors()
     {
         return $this->aliasOf->getDistMirrors();
+    }
+
+    public function getScripts()
+    {
+        return $this->aliasOf->getScripts();
+    }
+
+    public function getLicense()
+    {
+        return $this->aliasOf->getLicense();
     }
 
     public function getAutoload()
@@ -344,6 +349,11 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getIncludePaths();
     }
 
+    public function getRepositories()
+    {
+        return $this->aliasOf->getRepositories();
+    }
+
     public function getReleaseDate()
     {
         return $this->aliasOf->getReleaseDate();
@@ -354,9 +364,39 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getBinaries();
     }
 
+    public function getKeywords()
+    {
+        return $this->aliasOf->getKeywords();
+    }
+
+    public function getDescription()
+    {
+        return $this->aliasOf->getDescription();
+    }
+
+    public function getHomepage()
+    {
+        return $this->aliasOf->getHomepage();
+    }
+
     public function getSuggests()
     {
         return $this->aliasOf->getSuggests();
+    }
+
+    public function getAuthors()
+    {
+        return $this->aliasOf->getAuthors();
+    }
+
+    public function getSupport()
+    {
+        return $this->aliasOf->getSupport();
+    }
+
+    public function getFunding()
+    {
+        return $this->aliasOf->getFunding();
     }
 
     public function getNotificationUrl()
@@ -364,23 +404,48 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getNotificationUrl();
     }
 
+    public function getArchiveName()
+    {
+        return $this->aliasOf->getArchiveName();
+    }
+
+    public function getArchiveExcludes()
+    {
+        return $this->aliasOf->getArchiveExcludes();
+    }
+
     public function isDefaultBranch()
     {
         return $this->aliasOf->isDefaultBranch();
     }
 
+    public function isAbandoned()
+    {
+        return $this->aliasOf->isAbandoned();
+    }
+
+    public function getReplacementPackage()
+    {
+        return $this->aliasOf->getReplacementPackage();
+    }
+
+    public function __toString()
+    {
+        return parent::__toString().' ('.($this->rootPackageAlias ? 'root ' : ''). 'alias of '.$this->aliasOf->getVersion().')';
+    }
+
     public function setDistUrl($url)
     {
-        $this->aliasOf->setDistUrl($url);
+        return $this->aliasOf->setDistUrl($url);
     }
 
     public function setDistType($type)
     {
-        $this->aliasOf->setDistType($type);
+        return $this->aliasOf->setDistType($type);
     }
 
     public function setSourceDistReferences($reference)
     {
-        $this->aliasOf->setSourceDistReferences($reference);
+        return $this->aliasOf->setSourceDistReferences($reference);
     }
 }

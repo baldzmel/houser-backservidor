@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\Link;
-use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
@@ -46,8 +46,8 @@ abstract class Rule
     protected $reasonData;
 
     /**
-     * @param int              $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|BasePackage $reasonData
+     * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
+     * @param Link|PackageInterface $reasonData
      */
     public function __construct($reason, $reasonData)
     {
@@ -61,8 +61,6 @@ abstract class Rule
     abstract public function getLiterals();
 
     abstract public function getHash();
-
-    abstract public function __toString();
 
     abstract public function equals(Rule $rule);
 
@@ -211,39 +209,7 @@ abstract class Rule
                 $package1 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[0]));
                 $package2 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[1]));
 
-                $conflictTarget = $package1->getPrettyString();
-                if ($reasonData = $this->getReasonData()) {
-                    // swap literals if they are not in the right order with package2 being the conflicter
-                    if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
-                    }
-
-                    // if the conflict is not directly against the package but something it provides/replaces,
-                    // we try to find that link to display a better message
-                    if ($reasonData->getTarget() !== $package1->getName()) {
-                        $provideType = null;
-                        $provided = null;
-                        foreach ($package1->getProvides() as $provide) {
-                            if ($provide->getTarget() === $reasonData->getTarget()) {
-                                $provideType = 'provides';
-                                $provided = $provide->getPrettyConstraint();
-                                break;
-                            }
-                        }
-                        foreach ($package1->getReplaces() as $replace) {
-                            if ($replace->getTarget() === $reasonData->getTarget()) {
-                                $provideType = 'replaces';
-                                $provided = $replace->getPrettyConstraint();
-                                break;
-                            }
-                        }
-                        if (null !== $provideType) {
-                            $conflictTarget = $reasonData->getTarget().' '.$reasonData->getPrettyConstraint().' ('.$package1->getPrettyString().' '.$provideType.' '.$reasonData->getTarget().' '.$provided.')';
-                        }
-                    }
-                }
-
-                return $package2->getPrettyString().' conflicts with '.$conflictTarget.'.';
+                return $package2->getPrettyString().' conflicts with '.$package1->getPrettyString().'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
@@ -395,7 +361,7 @@ abstract class Rule
         return Problem::getPackageList($packages, $isVerbose);
     }
 
-    private function deduplicateDefaultBranchAlias(BasePackage $package)
+    private function deduplicateDefaultBranchAlias(PackageInterface $package)
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
             $package = $package->getAliasOf();

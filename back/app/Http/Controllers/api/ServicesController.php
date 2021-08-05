@@ -44,12 +44,14 @@ class ServicesController extends Controller
      */
     public function showHousersByService($id)
     {
-        $query = DB::table('user')
-            ->select('id_user', 'name', 'lastname', 'avatar', 'quote', 'portrait')
+
+        $queryUser = DB::table('user')
+            ->select('id_user', 'name', 'lastname', 'avatar', 'quote', 'portrait', 'total_rating')
             ->where('fk_level', '=', '3')
             ->where('fk_service', '=', $id)->get();
 
-        return response()->json(['data' => $query]);
+
+        return response()->json(['data' => $queryUser]);
 
     }
 

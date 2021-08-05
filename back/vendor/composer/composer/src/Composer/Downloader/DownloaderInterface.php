@@ -56,28 +56,25 @@ interface DownloaderInterface
     /**
      * Installs specific package into specific folder.
      *
-     * @param  PackageInterface      $package package instance
-     * @param  string                $path    download path
-     * @return PromiseInterface|null
+     * @param PackageInterface $package package instance
+     * @param string           $path    download path
      */
     public function install(PackageInterface $package, $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.
      *
-     * @param  PackageInterface      $initial initial package
-     * @param  PackageInterface      $target  updated package
-     * @param  string                $path    download path
-     * @return PromiseInterface|null
+     * @param PackageInterface $initial initial package
+     * @param PackageInterface $target  updated package
+     * @param string           $path    download path
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path);
 
     /**
      * Removes specific package from specific folder.
      *
-     * @param  PackageInterface      $package package instance
-     * @param  string                $path    download path
-     * @return PromiseInterface|null
+     * @param PackageInterface $package package instance
+     * @param string           $path    download path
      */
     public function remove(PackageInterface $package, $path);
 

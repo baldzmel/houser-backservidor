@@ -51,6 +51,7 @@ Route::post('users/{id}/profile', [
     'middleware' => ['auth:sanctum']
 ]);
 
+
 /*************** SERVICES **************/
 
 /** Trae el listado de Servicios **/
@@ -62,7 +63,7 @@ Route::get('services', [
 
 Route::get('service/{id}', [
     'uses' => 'api\\ServicesController@bringServiceById',
-    'as' => 'api.service',
+    'as' => 'api.service.id',
     'middleware' => ['auth:sanctum']
 ]);
 
@@ -105,15 +106,11 @@ Route::put('notification/read/{id_order}', [
     'middleware' => ['auth:sanctum']
 ]);
 
-/** Genera y guarda Valoración a Pedido */
-Route::post('orders/rating', [
-    'uses' => 'api\\OrdersController@setRatingOrder',
-    'as' => 'api.orders.rating',
+/** Genera y guarda Valoración a Orden de Pedido */
+Route::put('orders/rate/{idorder}/{rating}', [
+    'uses' => 'api\\OrdersController@setOrderRating',
+    'as' => 'api.orders.rate.idorder.rating',
     'middleware' => ['auth:sanctum']
 ]);
 
-//Route::get('orders/rating/{id_order}',[
-//    'uses' => 'api\\OrdersController@getRating',
-//    'as' => 'api.orders.rating.id_order',
-////    'middleware' => ['auth:sanctum']
-//]);
+

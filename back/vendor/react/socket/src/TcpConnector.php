@@ -2,7 +2,6 @@
 
 namespace React\Socket;
 
-use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Promise;
 use InvalidArgumentException;
@@ -13,9 +12,9 @@ final class TcpConnector implements ConnectorInterface
     private $loop;
     private $context;
 
-    public function __construct(LoopInterface $loop = null, array $context = array())
+    public function __construct(LoopInterface $loop, array $context = array())
     {
-        $this->loop = $loop ?: Loop::get();
+        $this->loop = $loop;
         $this->context = $context;
     }
 

@@ -19,21 +19,19 @@ namespace Composer\Package;
  */
 class CompletePackage extends Package implements CompletePackageInterface
 {
-    protected $repositories = array();
+    protected $repositories;
     protected $license = array();
-    protected $keywords = array();
-    protected $authors = array();
+    protected $keywords;
+    protected $authors;
     protected $description;
     protected $homepage;
     protected $scripts = array();
     protected $support = array();
     protected $funding = array();
     protected $abandoned = false;
-    protected $archiveName;
-    protected $archiveExcludes = array();
 
     /**
-     * {@inheritDoc}
+     * @param array $scripts
      */
     public function setScripts(array $scripts)
     {
@@ -49,9 +47,11 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the repositories
+     *
+     * @param array $repositories
      */
-    public function setRepositories(array $repositories)
+    public function setRepositories($repositories)
     {
         $this->repositories = $repositories;
     }
@@ -65,7 +65,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the license
+     *
+     * @param array $license
      */
     public function setLicense(array $license)
     {
@@ -81,7 +83,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the keywords
+     *
+     * @param array $keywords
      */
     public function setKeywords(array $keywords)
     {
@@ -97,7 +101,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the authors
+     *
+     * @param array $authors
      */
     public function setAuthors(array $authors)
     {
@@ -113,7 +119,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the description
+     *
+     * @param string $description
      */
     public function setDescription($description)
     {
@@ -129,7 +137,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the homepage
+     *
+     * @param string $homepage
      */
     public function setHomepage($homepage)
     {
@@ -145,7 +155,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the support information
+     *
+     * @param array $support
      */
     public function setSupport(array $support)
     {
@@ -161,7 +173,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Set the funding
+     *
+     * @param array $funding
      */
     public function setFunding(array $funding)
     {
@@ -177,7 +191,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @return bool
      */
     public function isAbandoned()
     {
@@ -185,7 +199,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @param bool|string $abandoned
      */
     public function setAbandoned($abandoned)
     {
@@ -193,42 +207,12 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * If the package is abandoned and has a suggested replacement, this method returns it
+     *
+     * @return string|null
      */
     public function getReplacementPackage()
     {
         return \is_string($this->abandoned) ? $this->abandoned : null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setArchiveName($name)
-    {
-        $this->archiveName = $name;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getArchiveName()
-    {
-        return $this->archiveName;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setArchiveExcludes(array $excludes)
-    {
-        $this->archiveExcludes = $excludes;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getArchiveExcludes()
-    {
-        return $this->archiveExcludes;
     }
 }

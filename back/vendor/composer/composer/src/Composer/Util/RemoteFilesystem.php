@@ -302,7 +302,7 @@ class RemoteFilesystem
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
-                } catch (\Exception $discarded) {
+                } catch (\Exception $e) {
                     $e->setResponse($result);
                 }
 
@@ -550,8 +550,8 @@ class RemoteFilesystem
                 // passing `null` to file_get_contents will convert `null` to `0` and return 0 bytes
                 $result = file_get_contents($fileUrl, false, $context);
             }
-        } catch (\Exception $e) {
         } catch (\Throwable $e) {
+        } catch (\Exception $e) {
         }
 
         if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {

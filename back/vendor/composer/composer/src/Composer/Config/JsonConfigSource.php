@@ -15,7 +15,6 @@ namespace Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Json\JsonValidationException;
-use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 
 /**
@@ -218,7 +217,7 @@ class JsonConfigSource implements ConfigSourceInterface
                 throw new \RuntimeException(sprintf('The file "%s" is not writable.', $this->file->getPath()));
             }
 
-            if (!Filesystem::isReadable($this->file->getPath())) {
+            if (!is_readable($this->file->getPath())) {
                 throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
             }
 

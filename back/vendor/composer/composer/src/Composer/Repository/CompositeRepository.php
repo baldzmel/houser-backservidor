@@ -177,7 +177,6 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
-    #[\ReturnTypeWillChange]
     public function count()
     {
         $total = 0;

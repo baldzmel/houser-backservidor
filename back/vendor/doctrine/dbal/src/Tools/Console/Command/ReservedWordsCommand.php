@@ -17,7 +17,6 @@ use Doctrine\DBAL\Platforms\Keywords\ReservedKeywordsValidator;
 use Doctrine\DBAL\Platforms\Keywords\SQLiteKeywords;
 use Doctrine\DBAL\Platforms\Keywords\SQLServer2012Keywords;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
-use Doctrine\Deprecations\Deprecation;
 use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -33,8 +32,19 @@ use function is_string;
 
 class ReservedWordsCommand extends Command
 {
-    /** @var array<string,KeywordList> */
-    private $keywordLists;
+    /** @var array<string,class-string<KeywordList>> */
+    private $keywordListClasses = [
+        'db2'           => DB2Keywords::class,
+        'mysql'         => MySQLKeywords::class,
+        'mysql57'       => MySQL57Keywords::class,
+        'mysql80'       => MySQL80Keywords::class,
+        'mariadb102'    => MariaDb102Keywords::class,
+        'oracle'        => OracleKeywords::class,
+        'pgsql'         => PostgreSQL94Keywords::class,
+        'pgsql100'      => PostgreSQL100Keywords::class,
+        'sqlite'        => SQLiteKeywords::class,
+        'sqlserver'     => SQLServer2012Keywords::class,
+    ];
 
     /** @var ConnectionProvider */
     private $connectionProvider;
@@ -43,27 +53,6 @@ class ReservedWordsCommand extends Command
     {
         parent::__construct();
         $this->connectionProvider = $connectionProvider;
-
-        $this->keywordLists = [
-            'db2'        => new DB2Keywords(),
-            'mariadb102' => new MariaDb102Keywords(),
-            'mysql'      => new MySQLKeywords(),
-            'mysql57'    => new MySQL57Keywords(),
-            'mysql80'    => new MySQL80Keywords(),
-            'oracle'     => new OracleKeywords(),
-            'pgsql'      => new PostgreSQL94Keywords(),
-            'pgsql100'   => new PostgreSQL100Keywords(),
-            'sqlite'     => new SQLiteKeywords(),
-            'sqlserver'  => new SQLServer2012Keywords(),
-        ];
-    }
-
-    /**
-     * Add or replace a keyword list.
-     */
-    public function setKeywordList(string $name, KeywordList $keywordList): void
-    {
-        $this->keywordLists[$name] = $keywordList;
     }
 
     /**
@@ -76,14 +65,7 @@ class ReservedWordsCommand extends Command
      */
     public function setKeywordListClass($name, $class)
     {
-        Deprecation::trigger(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4510',
-            'ReservedWordsCommand::setKeywordListClass() is deprecated,'
-                . ' use ReservedWordsCommand::setKeywordList() instead.'
-        );
-
-        $this->keywordLists[$name] = new $class();
+        $this->keywordListClasses[$name] = $class;
     }
 
     /** @return void */
@@ -105,7 +87,8 @@ class ReservedWordsCommand extends Command
 Checks if the current database contains tables and columns
 with names that are identifiers in this dialect or in other SQL dialects.
 
-By default all supported platform keywords are checked:
+By default SQLite, MySQL, PostgreSQL, Microsoft SQL Server and Oracle
+keywords are checked:
 
     <info>%command.full_name%</info>
 
@@ -116,16 +99,17 @@ pass them to the command:
 
 The following keyword lists are currently shipped with Doctrine:
 
-    * db2
-    * mariadb102
     * mysql
     * mysql57
     * mysql80
-    * oracle
+    * mariadb102
     * pgsql
     * pgsql100
     * sqlite
+    * oracle
     * sqlserver
+    * sqlserver2012
+    * db2 (Not checked by default)
 EOT
         );
     }
@@ -148,19 +132,20 @@ EOT
         }
 
         if (count($keywordLists) === 0) {
-            $keywordLists = array_keys($this->keywordLists);
+            $keywordLists = array_keys($this->keywordListClasses);
         }
 
         $keywords = [];
         foreach ($keywordLists as $keywordList) {
-            if (! isset($this->keywordLists[$keywordList])) {
+            if (! isset($this->keywordListClasses[$keywordList])) {
                 throw new InvalidArgumentException(
                     "There exists no keyword list with name '" . $keywordList . "'. " .
-                    'Known lists: ' . implode(', ', array_keys($this->keywordLists))
+                    'Known lists: ' . implode(', ', array_keys($this->keywordListClasses))
                 );
             }
 
-            $keywords[] = $this->keywordLists[$keywordList];
+            $class      = $this->keywordListClasses[$keywordList];
+            $keywords[] = new $class();
         }
 
         $output->write(

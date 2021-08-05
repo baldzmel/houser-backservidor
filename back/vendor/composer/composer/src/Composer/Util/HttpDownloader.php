@@ -81,11 +81,12 @@ class HttpDownloader
     /**
      * Download a file synchronously
      *
-     * @param  string             $url     URL to download
-     * @param  array              $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
-     *                                     although not all options are supported when using the default curl downloader
-     * @throws TransportException
+     * @param  string   $url     URL to download
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
      * @return Response
+     *
+     * @throws TransportException
      */
     public function get($url, $options = array())
     {
@@ -118,11 +119,12 @@ class HttpDownloader
     /**
      * Create an async download operation
      *
-     * @param  string             $url     URL to download
-     * @param  array              $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
-     *                                     although not all options are supported when using the default curl downloader
-     * @throws TransportException
+     * @param  string   $url     URL to download
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
      * @return Promise
+     *
+     * @throws TransportException
      */
     public function add($url, $options = array())
     {
@@ -134,12 +136,13 @@ class HttpDownloader
     /**
      * Copy a file synchronously
      *
-     * @param  string             $url     URL to download
-     * @param  string             $to      Path to copy to
-     * @param  array              $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
-     *                                     although not all options are supported when using the default curl downloader
-     * @throws TransportException
+     * @param  string   $url     URL to download
+     * @param  string   $to      Path to copy to
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
      * @return Response
+     *
+     * @throws TransportException
      */
     public function copy($url, $to, $options = array())
     {
@@ -152,12 +155,13 @@ class HttpDownloader
     /**
      * Create an async copy operation
      *
-     * @param  string             $url     URL to download
-     * @param  string             $to      Path to copy to
-     * @param  array              $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
-     *                                     although not all options are supported when using the default curl downloader
-     * @throws TransportException
+     * @param  string   $url     URL to download
+     * @param  string   $to      Path to copy to
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
      * @return Promise
+     *
+     * @throws TransportException
      */
     public function addCopy($url, $to, $options = array())
     {

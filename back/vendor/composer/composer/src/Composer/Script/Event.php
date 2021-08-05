@@ -95,7 +95,7 @@ class Event extends BaseEvent
     /**
      * Set the originating event.
      *
-     * @return ?BaseEvent
+     * @return \Composer\EventDispatcher\Event|null
      */
     public function getOriginatingEvent()
     {
@@ -105,7 +105,7 @@ class Event extends BaseEvent
     /**
      * Set the originating event.
      *
-     * @param  BaseEvent $event
+     * @param  \Composer\EventDispatcher\Event $event
      * @return $this
      */
     public function setOriginatingEvent(BaseEvent $event)
@@ -118,8 +118,8 @@ class Event extends BaseEvent
     /**
      * Returns the upper-most event in chain.
      *
-     * @param  BaseEvent $event
-     * @return BaseEvent
+     * @param  \Composer\EventDispatcher\Event $event
+     * @return \Composer\EventDispatcher\Event
      */
     private function calculateOriginatingEvent(BaseEvent $event)
     {

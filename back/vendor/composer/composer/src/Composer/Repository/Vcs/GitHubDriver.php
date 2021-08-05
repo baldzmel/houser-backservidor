@@ -39,9 +39,9 @@ class GitHubDriver extends VcsDriver
     /**
      * Git Driver
      *
-     * @var ?GitDriver
+     * @var GitDriver
      */
-    protected $gitDriver = null;
+    protected $gitDriver;
 
     /**
      * {@inheritDoc}

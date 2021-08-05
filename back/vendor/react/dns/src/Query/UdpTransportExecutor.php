@@ -5,7 +5,6 @@ namespace React\Dns\Query;
 use React\Dns\Model\Message;
 use React\Dns\Protocol\BinaryDumper;
 use React\Dns\Protocol\Parser;
-use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 
@@ -19,7 +18,8 @@ use React\Promise\Deferred;
  * The following example looks up the `IPv6` address for `igor.io`.
  *
  * ```php
- * $executor = new UdpTransportExecutor('8.8.8.8:53');
+ * $loop = Factory::create();
+ * $executor = new UdpTransportExecutor('8.8.8.8:53', $loop);
  *
  * $executor->query(
  *     new Query($name, Message::TYPE_AAAA, Message::CLASS_IN)
@@ -28,6 +28,8 @@ use React\Promise\Deferred;
  *         echo 'IPv6: ' . $answer->data . PHP_EOL;
  *     }
  * }, 'printf');
+ *
+ * $loop->run();
  * ```
  *
  * See also the [fourth example](examples).
@@ -37,8 +39,9 @@ use React\Promise\Deferred;
  *
  * ```php
  * $executor = new TimeoutExecutor(
- *     new UdpTransportExecutor($nameserver),
- *     3.0
+ *     new UdpTransportExecutor($nameserver, $loop),
+ *     3.0,
+ *     $loop
  * );
  * ```
  *
@@ -49,8 +52,9 @@ use React\Promise\Deferred;
  * ```php
  * $executor = new RetryExecutor(
  *     new TimeoutExecutor(
- *         new UdpTransportExecutor($nameserver),
- *         3.0
+ *         new UdpTransportExecutor($nameserver, $loop),
+ *         3.0,
+ *         $loop
  *     )
  * );
  * ```
@@ -67,8 +71,9 @@ use React\Promise\Deferred;
  * $executor = new CoopExecutor(
  *     new RetryExecutor(
  *         new TimeoutExecutor(
- *             new UdpTransportExecutor($nameserver),
- *             3.0
+ *             new UdpTransportExecutor($nameserver, $loop),
+ *             3.0,
+ *             $loop
  *         )
  *     )
  * );
@@ -95,10 +100,10 @@ final class UdpTransportExecutor implements ExecutorInterface
     private $maxPacketSize = 512;
 
     /**
-     * @param string         $nameserver
-     * @param ?LoopInterface $loop
+     * @param string        $nameserver
+     * @param LoopInterface $loop
      */
-    public function __construct($nameserver, LoopInterface $loop = null)
+    public function __construct($nameserver, LoopInterface $loop)
     {
         if (\strpos($nameserver, '[') === false && \substr_count($nameserver, ':') >= 2 && \strpos($nameserver, '://') === false) {
             // several colons, but not enclosed in square brackets => enclose IPv6 address in square brackets
@@ -111,7 +116,7 @@ final class UdpTransportExecutor implements ExecutorInterface
         }
 
         $this->nameserver = 'udp://' . $parts['host'] . ':' . (isset($parts['port']) ? $parts['port'] : 53);
-        $this->loop = $loop ?: Loop::get();
+        $this->loop = $loop;
         $this->parser = new Parser();
         $this->dumper = new BinaryDumper();
     }

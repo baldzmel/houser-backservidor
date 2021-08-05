@@ -22,7 +22,8 @@ use Ramsey\Collection\Tool\ValueToStringTrait;
  * This class provides a basic implementation of `TypedMapInterface`, to
  * minimize the effort required to implement this interface.
  *
- * @template K
+ * @phpstan-ignore-next-line
+ * @template K as array-key
  * @template T
  * @template-extends AbstractMap<T>
  * @template-implements TypedMapInterface<T>
@@ -63,7 +64,6 @@ abstract class AbstractTypedMap extends AbstractMap implements TypedMapInterface
             );
         }
 
-        /** @psalm-suppress MixedArgumentTypeCoercion */
         parent::offsetSet($offset, $value);
     }
 }

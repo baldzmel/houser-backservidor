@@ -16,8 +16,6 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
-use Composer\Package\CompleteAliasPackage;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Plugin\PluginEvents;
@@ -45,13 +43,11 @@ class PoolBuilder
      */
     private $stabilityFlags;
     /**
-     * @var array[]
-     * @phpstan-var array<string, array<string, array{alias: string, alias_normalized: string}>>
+     * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
     /**
-     * @var string[]
-     * @phpstan-var array<string, string>
+     * @psalm-var array<string, string>
      */
     private $rootReferences;
     /**
@@ -63,32 +59,27 @@ class PoolBuilder
      */
     private $io;
     /**
-     * @var array[]
-     * @phpstan-var array<string, AliasPackage[]>
+     * @psalm-var array<string, AliasPackage>
      */
     private $aliasMap = array();
     /**
-     * @var ConstraintInterface[]
-     * @phpstan-var array<string, ConstraintInterface>
+     * @psalm-var array<string, ConstraintInterface>
      */
     private $packagesToLoad = array();
     /**
-     * @var ConstraintInterface[]
-     * @phpstan-var array<string, ConstraintInterface>
+     * @psalm-var array<string, ConstraintInterface>
      */
     private $loadedPackages = array();
     /**
-     * @var array[]
-     * @phpstan-var array<int, array<string, array<string, PackageInterface>>>
+     * @psalm-var array<int, array<string, array<string, PackageInterface>>>
      */
     private $loadedPerRepo = array();
     /**
-     * @var PackageInterface[]
+     * @psalm-var Package[]
      */
     private $packages = array();
     /**
-     * @var PackageInterface[]
-     * @phpstan-var list<PackageInterface>
+     * @psalm-var list<Package>
      */
     private $unacceptableFixedOrLockedPackages = array();
     private $updateAllowList = array();
@@ -104,8 +95,7 @@ class PoolBuilder
      */
     private $maxExtendedReqs = array();
     /**
-     * @var array
-     * @phpstan-var array<string, bool>
+     * @psalm-var array<string, bool>
      */
     private $updateAllowWarned = array();
 
@@ -113,13 +103,13 @@ class PoolBuilder
 
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @phpstan-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
+     * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
-     * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
+     * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @param array[] $rootAliases
-     * @phpstan-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
+     * @psalm-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference
-     * @phpstan-param array<string, string> $rootReferences
+     * @psalm-param array<string, string> $rootReferences
      */
     public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
@@ -370,11 +360,7 @@ class PoolBuilder
             } else {
                 $basePackage = $package;
             }
-            if ($basePackage instanceof CompletePackageInterface) {
-                $aliasPackage = new CompleteAliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
-            } else {
-                $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
-            }
+            $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
             $aliasPackage->setRootPackageAlias(true);
 
             $newIndex = $this->indexCounter++;
@@ -441,16 +427,6 @@ class PoolBuilder
      */
     private function isUpdateAllowed(PackageInterface $package)
     {
-        // Path repo packages are never loaded from lock, to force them to always remain in sync
-        // unless symlinking is disabled in which case we probably should rather treat them like
-        // regular packages
-        if ($package->getDistType() === 'path') {
-            $transportOptions = $package->getTransportOptions();
-            if (!isset($transportOptions['symlink']) || $transportOptions['symlink'] !== false) {
-                return true;
-            }
-        }
-
         foreach ($this->updateAllowList as $pattern => $void) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             if (preg_match($patternRegexp, $package->getName())) {
@@ -491,6 +467,7 @@ class PoolBuilder
      */
     private function unlockPackage(Request $request, $name)
     {
+
         if (
             // if we unfixed a replaced package name, we also need to unfix the replacer itself
             $this->skippedLoad[$name] !== $name

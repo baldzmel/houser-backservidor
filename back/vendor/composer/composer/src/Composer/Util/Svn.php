@@ -85,7 +85,8 @@ class Svn
     public static function cleanEnv()
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
-        Platform::clearEnv('DYLD_LIBRARY_PATH');
+        putenv("DYLD_LIBRARY_PATH");
+        unset($_SERVER['DYLD_LIBRARY_PATH']);
     }
 
     /**
@@ -223,7 +224,7 @@ class Svn
     protected function getCommand($cmd, $url, $path = null)
     {
         $cmd = sprintf(
-            '%s %s%s -- %s',
+            '%s %s%s %s',
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),

@@ -24,11 +24,6 @@ use Symfony\Component\Console\Helper\HelperSet;
  */
 class BufferIO extends ConsoleIO
 {
-    /** @var StringInput */
-    protected $input;
-    /** @var StreamOutput */
-    protected $output;
-
     /**
      * @param string                        $input
      * @param int                           $verbosity

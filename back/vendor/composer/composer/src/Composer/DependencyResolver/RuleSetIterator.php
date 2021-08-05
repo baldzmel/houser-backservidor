@@ -33,19 +33,16 @@ class RuleSetIterator implements \Iterator
         $this->rewind();
     }
 
-    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->rules[$this->currentType][$this->currentOffset];
     }
 
-    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->currentType;
     }
 
-    #[\ReturnTypeWillChange]
     public function next()
     {
         $this->currentOffset++;
@@ -70,7 +67,6 @@ class RuleSetIterator implements \Iterator
         }
     }
 
-    #[\ReturnTypeWillChange]
     public function rewind()
     {
         $this->currentOffset = 0;
@@ -90,7 +86,6 @@ class RuleSetIterator implements \Iterator
         } while (isset($this->types[$this->currentTypeOffset]) && !\count($this->rules[$this->currentType]));
     }
 
-    #[\ReturnTypeWillChange]
     public function valid()
     {
         return isset($this->rules[$this->currentType], $this->rules[$this->currentType][$this->currentOffset]);

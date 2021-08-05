@@ -17,11 +17,13 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Plugin\Capability\Capability;
@@ -222,7 +224,6 @@ class PluginManager
             }
 
             if ($oldInstallerPlugin) {
-                $this->io->writeError('<warning>Loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'which is a legacy composer-installer built for Composer 1.x, it is likely to cause issues as you are running Composer 2.x.</warning>');
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
                 $this->registeredPlugins[$package->getName()] = $installer;
@@ -471,20 +472,15 @@ class PluginManager
         ) {
             throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
         }
-
-        return null;
     }
 
     /**
-     * @template CapabilityClass of Capability
-     * @param  PluginInterface               $plugin
-     * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                                            an implementation of.
-     * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
-     *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @param  PluginInterface $plugin
+     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                              an implementation of.
+     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
+     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return null|Capability
-     * @phpstan-param class-string<CapabilityClass> $capabilityClassName
-     * @phpstan-return null|CapabilityClass
      */
     public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
     {
@@ -505,17 +501,14 @@ class PluginManager
 
             return $capabilityObj;
         }
-
-        return null;
     }
 
     /**
-     * @template CapabilityClass of Capability
-     * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                                            an implementation of.
-     * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
-     *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
-     * @return CapabilityClass[]
+     * @param  string       $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                           an implementation of.
+     * @param  array        $ctorArgs            Arguments passed to Capability's constructor.
+     *                                           Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return Capability[]
      */
     public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())
     {

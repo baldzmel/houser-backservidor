@@ -202,7 +202,6 @@ EOT
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         if ($dryRun) {
             $rootPackage = $composer->getPackage();
@@ -256,6 +255,7 @@ EOT
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($ignorePlatformReqs)
+            ->setRunScripts(!$input->getOption('no-scripts'))
             ->setDryRun($dryRun)
         ;
 

@@ -10,13 +10,11 @@ require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Console\Application;
 use Composer\XdebugHandler\XdebugHandler;
-use Composer\Util\Platform;
-use Composer\Util\ErrorHandler;
 
 error_reporting(-1);
 
 // Restart without Xdebug
-$xdebug = new XdebugHandler('Composer');
+$xdebug = new XdebugHandler('Composer', '--ansi');
 $xdebug->check();
 unset($xdebug);
 
@@ -59,9 +57,7 @@ if (function_exists('ini_set')) {
     unset($memoryLimit);
 }
 
-Platform::putEnv('COMPOSER_BINARY', realpath($_SERVER['argv'][0]));
-
-ErrorHandler::register();
+putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
 
 // run the command application
 $application = new Application();

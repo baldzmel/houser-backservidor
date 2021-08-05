@@ -84,8 +84,8 @@ final class HappyEyeBallsConnectionBuilder
 
             $that->resolverPromises[Message::TYPE_AAAA] = $that->resolve(Message::TYPE_AAAA, $reject)->then($lookupResolve(Message::TYPE_AAAA));
             $that->resolverPromises[Message::TYPE_A] = $that->resolve(Message::TYPE_A, $reject)->then(function (array $ips) use ($that, &$timer) {
-                // happy path: IPv6 has resolved already (or could not resolve), continue with IPv4 addresses
-                if ($that->resolved[Message::TYPE_AAAA] === true || !$ips) {
+                // happy path: IPv6 has resolved already, continue with IPv4 addresses
+                if ($that->resolved[Message::TYPE_AAAA] === true) {
                     return $ips;
                 }
 
@@ -117,9 +117,8 @@ final class HappyEyeBallsConnectionBuilder
      * @internal
      * @param int      $type   DNS query type
      * @param callable $reject
-     * @return \React\Promise\PromiseInterface<string[]> Returns a promise that
-     *     always resolves with a list of IP addresses on success or an empty
-     *     list on error.
+     * @return \React\Promise\PromiseInterface<string[],\Exception> Returns a promise
+     *     that resolves list of IP addresses on success or rejects with an \Exception on error.
      */
     public function resolve($type, $reject)
     {
@@ -146,8 +145,7 @@ final class HappyEyeBallsConnectionBuilder
                 $reject(new \RuntimeException($that->error()));
             }
 
-            // Exception already handled above, so don't throw an unhandled rejection here
-            return array();
+            throw $e;
         });
     }
 
@@ -318,7 +316,6 @@ final class HappyEyeBallsConnectionBuilder
      */
     public function mixIpsIntoConnectQueue(array $ips)
     {
-        \shuffle($ips);
         $this->ipsCount += \count($ips);
         $connectQueueStash = $this->connectQueue;
         $this->connectQueue = array();

@@ -33,9 +33,9 @@ abstract class BitbucketDriver extends VcsDriver
     protected $cloneHttpsUrl = '';
 
     /**
-     * @var ?VcsDriver
+     * @var VcsDriver
      */
-    protected $fallbackDriver = null;
+    protected $fallbackDriver;
     /** @var string|null if set either git or hg */
     protected $vcsType;
 

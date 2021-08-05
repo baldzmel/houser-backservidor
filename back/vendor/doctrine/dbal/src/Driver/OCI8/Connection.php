@@ -115,8 +115,6 @@ final class Connection implements ServerInfoAwareConnection
     /**
      * {@inheritdoc}
      *
-     * @param string|null $name
-     *
      * @return int|false
      */
     public function lastInsertId($name = null)

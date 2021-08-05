@@ -10,7 +10,7 @@ class Order extends Model
     use HasFactory;
     protected $table = "orders";
     protected $primaryKey = "id_order";
-    protected $fillable = ['fk_order_state', 'fk_service', 'fk_user', 'fk_houser', 'user_message', 'houser_message', 'read_at'];
+    protected $fillable = ['fk_order_state', 'fk_service', 'fk_user', 'fk_houser', 'rating', 'user_message', 'houser_message', 'read_at'];
 
     public static function rulesCreate()
     {

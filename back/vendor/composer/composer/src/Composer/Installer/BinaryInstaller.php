@@ -53,9 +53,6 @@ class BinaryInstaller
         if (!$binaries) {
             return;
         }
-
-        Platform::workaroundFilesystemIssues();
-
         foreach ($binaries as $bin) {
             $binPath = $installPath.'/'.$bin;
             if (!file_exists($binPath)) {
@@ -85,17 +82,15 @@ class BinaryInstaller
             }
 
             if ($this->binCompat === "auto") {
-                if (Platform::isWindows() || Platform::isWindowsSubsystemForLinux()) {
+                if (Platform::isWindows()) {
                     $this->installFullBinaries($binPath, $link, $bin, $package);
                 } else {
                     $this->installSymlinkBinaries($binPath, $link);
                 }
             } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
-            } elseif ($this->binCompat === "symlink") {
-                $this->installSymlinkBinaries($binPath, $link);
             }
-            Silencer::call('chmod', $binPath, 0777 & ~umask());
+            Silencer::call('chmod', $link, 0777 & ~umask());
         }
     }
 
@@ -149,6 +144,7 @@ class BinaryInstaller
         // add unixy support for cygwin and similar environments
         if ('.bat' !== substr($binPath, -4)) {
             $this->installUnixyProxyBinaries($binPath, $link);
+            @chmod($link, 0777 & ~umask());
             $link .= '.bat';
             if (file_exists($link)) {
                 $this->io->writeError('    Skipped installation of bin '.$bin.'.bat proxy for package '.$package->getName().': a .bat proxy was already installed');
@@ -156,7 +152,6 @@ class BinaryInstaller
         }
         if (!file_exists($link)) {
             file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
-            Silencer::call('chmod', $link, 0777 & ~umask());
         }
     }
 
@@ -170,7 +165,6 @@ class BinaryInstaller
     protected function installUnixyProxyBinaries($binPath, $link)
     {
         file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
-        Silencer::call('chmod', $link, 0777 & ~umask());
     }
 
     protected function initializeBinDir()
@@ -209,7 +203,6 @@ class BinaryInstaller
                     $proxyCode = "#!/usr/bin/env php";
                 }
                 $binPathExported = var_export($binPath, true);
-
                 return $proxyCode . "\n" . <<<PROXY
 <?php
 

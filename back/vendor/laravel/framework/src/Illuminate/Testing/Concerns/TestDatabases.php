@@ -46,21 +46,19 @@ trait TestDatabases
             ];
 
             if (Arr::hasAny($uses, $databaseTraits)) {
-                if (! ParallelTesting::option('without_databases')) {
-                    $this->whenNotUsingInMemoryDatabase(function ($database) use ($uses) {
-                        [$testDatabase, $created] = $this->ensureTestDatabaseExists($database);
+                $this->whenNotUsingInMemoryDatabase(function ($database) use ($uses) {
+                    [$testDatabase, $created] = $this->ensureTestDatabaseExists($database);
 
-                        $this->switchToDatabase($testDatabase);
+                    $this->switchToDatabase($testDatabase);
 
-                        if (isset($uses[Testing\DatabaseTransactions::class])) {
-                            $this->ensureSchemaIsUpToDate();
-                        }
+                    if (isset($uses[Testing\DatabaseTransactions::class])) {
+                        $this->ensureSchemaIsUpToDate();
+                    }
 
-                        if ($created) {
-                            ParallelTesting::callSetUpTestDatabaseCallbacks($testDatabase);
-                        }
-                    });
-                }
+                    if ($created) {
+                        ParallelTesting::callSetUpTestDatabaseCallbacks($testDatabase);
+                    }
+                });
             }
         });
     }
@@ -109,8 +107,8 @@ trait TestDatabases
     /**
      * Runs the given callable using the given database.
      *
-     * @param  string  $database
-     * @param  callable  $callable
+     * @param  string $database
+     * @param  callable $callable
      * @return void
      */
     protected function usingDatabase($database, $callable)
@@ -128,7 +126,7 @@ trait TestDatabases
     /**
      * Apply the given callback when tests are not using in memory database.
      *
-     * @param  callable  $callback
+     * @param  callable $callback
      * @return void
      */
     protected function whenNotUsingInMemoryDatabase($callback)
@@ -143,7 +141,7 @@ trait TestDatabases
     /**
      * Switch to the given database.
      *
-     * @param  string  $database
+     * @param  string $database
      * @return void
      */
     protected function switchToDatabase($database)

@@ -15,7 +15,6 @@ namespace Composer\Command;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -103,8 +102,6 @@ EOT
             // Override global timeout set before in Composer by environment or config
             ProcessExecutor::setTimeout((int) $timeout);
         }
-
-        Platform::putEnv('COMPOSER_DEV_MODE', $devMode ? '1' : '0');
 
         return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
     }

@@ -22,8 +22,10 @@ class CreateUserTable extends Migration
             $table->string('lastname', 80);
             $table->string('telephone', 20);
             $table->string('address', 255)->nullable();
-            $table->string('region', 255)->nullable();
-            $table->string('locality', 255)->nullable();
+            $table->string('state', 255)->nullable();
+            $table->string('suburb', 255)->nullable();
+            $table->string('neighbourhood', 255)->nullable();
+            $table->string('cp', 255)->nullable();
             $table->string('quote', 200)->nullable();
             $table->date('birthday')->nullable();
             $table->string('portrait', 255)->nullable();

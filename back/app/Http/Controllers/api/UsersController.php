@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 //use App\Http\Controllers\Controller;
+use App\Helpers\File;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Users;
 use App\Models\Order;
@@ -11,6 +12,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
+
 
 class UsersController extends Controller
 {
@@ -39,14 +43,14 @@ class UsersController extends Controller
         $user = Users::findOrFail($id);
         $data = $request->all();
 
-        if($request->avatar) {
-            $nameImg = date('YmdHis') . "." . $request->avatar->extension();
-            $request->file('avatar')->move(public_path('/imgs/'), $nameImg);
-            $data['avatar'] = $nameImg;
-            if ($user->image !== 'avatar.png') {
-                $oldImg = $user->image;
-            }
+        if(!empty($data['avatar'])){
+            $avatar = Image::make($data['avatar']);
+            $nameAvatar = Str::slug($data['name']) . File::mimeToExtension($avatar->mime());
+            $avatar->fit(100, 100, function($constraint){
+                $constraint->upsize();
+            })->save(public_path('/imgs/' . $nameAvatar));
         }
+
 
         if(isset($data['password'])){
             $data['password'] = Hash::make($data['password']);

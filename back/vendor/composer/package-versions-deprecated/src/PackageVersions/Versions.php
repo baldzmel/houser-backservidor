@@ -60,6 +60,7 @@ final class Versions
   'guzzlehttp/guzzle' => '7.3.0@7008573787b430c1c1f650e3722d9bba59967628',
   'guzzlehttp/promises' => '1.4.1@8e7d04f1f6450fef59366c399cfad4b9383aa30d',
   'guzzlehttp/psr7' => '1.8.1@35ea11d335fd638b5882ff1725228b3d35496ab1',
+  'intervention/image' => '2.6.1@0925f10b259679b5d8ca58f3a2add9255ffcda45',
   'justinrainbow/json-schema' => '5.2.10@2ba9c8c862ecd5510ed16c6340aa9f6eadb4f31b',
   'laravel/framework' => 'v8.36.2@0debd8ad6b5aa1f61ccc73910adf049af4ca0444',
   'laravel/sanctum' => 'v2.11.1@5de9d0ced8ae50dacb00c16077115f32e94d13f2',
@@ -174,7 +175,7 @@ final class Versions
   'sebastian/version' => '3.0.2@c6c1022351a901512170118436c764e473f6de8c',
   'symfony/debug' => 'v4.4.20@157bbec4fd773bae53c5483c50951a5530a2cc16',
   'theseer/tokenizer' => '1.2.0@75a63c33a8577608444246075ea0af0d052e452a',
-  'laravel/laravel' => 'dev-master@f1fab132d1d5ba5871968cfcc9f00468862c0bc6',
+  'laravel/laravel' => 'dev-master@a85278de02c3ff2428fb9b75d34a286c8e5ed549',
 );
 
     private function __construct()

@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '057f291ae4bd552ef51c49e30c5930cf69688245',
+    'reference' => 'a85278de02c3ff2428fb9b75d34a286c8e5ed549',
     'name' => 'laravel/laravel',
   ),
   'versions' => 
@@ -548,6 +548,15 @@
         0 => 'v8.36.2',
       ),
     ),
+    'intervention/image' => 
+    array (
+      'pretty_version' => '2.6.1',
+      'version' => '2.6.1.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '0925f10b259679b5d8ca58f3a2add9255ffcda45',
+    ),
     'justinrainbow/json-schema' => 
     array (
       'pretty_version' => '5.2.10',
@@ -580,7 +589,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '057f291ae4bd552ef51c49e30c5930cf69688245',
+      'reference' => 'a85278de02c3ff2428fb9b75d34a286c8e5ed549',
     ),
     'laravel/sail' => 
     array (

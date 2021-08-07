@@ -44,5 +44,23 @@ class ServicesTableSeeder extends Seeder
             'img' => 'flete.png',
             'alt' => '2 hombres cargando cosas a un camión'
         ]);
+        Service::create([
+            'id_service' => 6,
+            'title' => "Electricista",
+            'img' => 'electricista.png',
+            'alt' => 'Electricista'
+        ]);
+        Service::create([
+            'id_service' => 7,
+            'title' => "Plomería",
+            'img' => 'plomeria.png',
+            'alt' => 'Gasista'
+        ]);
+        Service::create([
+            'id_service' => 8,
+            'title' => "Gasista",
+            'img' => 'gasista.png',
+            'alt' => 'Gasista'
+        ]);
     }
 }

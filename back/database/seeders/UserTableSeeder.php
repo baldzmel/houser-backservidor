@@ -451,7 +451,6 @@ class UserTableSeeder extends Seeder
             'fk_service' => 8,
             'total_rating' => 3.2
         ]);
-        
     }
 }
 

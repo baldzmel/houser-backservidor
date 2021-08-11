@@ -45,7 +45,8 @@ class UsersController extends Controller
 
         if(!empty($data['avatar'])){
             $avatar = Image::make($data['avatar']);
-            $nameAvatar = Str::slug($data['name']) . File::mimeToExtension($avatar->mime());
+            $nameAvatar = date('YmdHis') . File::mimeToExtension($avatar->mime());
+            $data['avatar'] = $nameAvatar;
             $avatar->fit(100, 100, function($constraint){
                 $constraint->upsize();
             })->save(public_path('/imgs/' . $nameAvatar));

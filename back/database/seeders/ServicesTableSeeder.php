@@ -54,7 +54,7 @@ class ServicesTableSeeder extends Seeder
             'id_service' => 7,
             'title' => "Plomería",
             'img' => 'plomeria.png',
-            'alt' => 'Gasista'
+            'alt' => 'plomería'
         ]);
         Service::create([
             'id_service' => 8,

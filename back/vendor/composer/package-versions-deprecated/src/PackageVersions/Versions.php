@@ -63,6 +63,7 @@ final class Versions
   'intervention/image' => '2.6.1@0925f10b259679b5d8ca58f3a2add9255ffcda45',
   'justinrainbow/json-schema' => '5.2.10@2ba9c8c862ecd5510ed16c6340aa9f6eadb4f31b',
   'laravel/framework' => 'v8.36.2@0debd8ad6b5aa1f61ccc73910adf049af4ca0444',
+  'laravel/helpers' => 'v1.4.1@febb10d8daaf86123825de2cb87f789a3371f0ac',
   'laravel/sanctum' => 'v2.11.1@5de9d0ced8ae50dacb00c16077115f32e94d13f2',
   'laravel/tinker' => 'v2.6.1@04ad32c1a3328081097a181875733fa51f402083',
   'league/commonmark' => '1.5.8@08fa59b8e4e34ea8a773d55139ae9ac0e0aecbaf',
@@ -175,7 +176,7 @@ final class Versions
   'sebastian/version' => '3.0.2@c6c1022351a901512170118436c764e473f6de8c',
   'symfony/debug' => 'v4.4.20@157bbec4fd773bae53c5483c50951a5530a2cc16',
   'theseer/tokenizer' => '1.2.0@75a63c33a8577608444246075ea0af0d052e452a',
-  'laravel/laravel' => 'dev-master@a85278de02c3ff2428fb9b75d34a286c8e5ed549',
+  'laravel/laravel' => 'dev-main@6e0539daa2f3609b7a8b821d81def7660b0a9f58',
 );
 
     private function __construct()

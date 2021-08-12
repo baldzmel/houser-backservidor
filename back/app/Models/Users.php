@@ -69,6 +69,14 @@ class Users extends Authenticatable
         'address.required' => 'Debes ingresar tu domicilio.',
     ];
 
+    /**
+     * Override the mail body for reset password notification mail.
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\MailResetPasswordNotification($token));
+    }
+
     public function level()
     {
         return $this->belongsTo(Level::class, 'fk_level', 'id_level');

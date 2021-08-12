@@ -33,6 +33,13 @@ Route::prefix('auth')
         Route::post('logout', 'api\\AuthController@logout')
             ->name('auth.logout')
             ->middleware(['auth:sanctum']);
+
+        /** Send reset password mail **/
+        Route::post('reset-password', 'AuthController@sendPasswordResetLink');
+
+        /** Handle reset password form process **/
+        Route::post('reset/password', 'AuthController@callResetPassword');
+
     });
 
 /**************** USERS PROFILE *****************/

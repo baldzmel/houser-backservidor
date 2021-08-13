@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 //use App\Http\Controllers\Controller;
 use App\Helpers\File;
+use App\Mail\codePassword;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Users;
 use App\Models\Order;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-
+use Mail;
 
 class UsersController extends Controller
 {
@@ -67,6 +68,78 @@ class UsersController extends Controller
             'data' => $user,
             'message' => "Tus datos han sido actualizados con éxito."
         ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function codeVerifyPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = Users::where('email', $request->email)->first();
+
+        if (!$user){
+            return response()->json([
+                'message' => 'Usuario inexistente',
+                'status_code' => 401
+            ], 401);
+
+        } else{
+
+            $random = rand(111111, 999999);
+            $user->verification_code = $random;
+            $user->save();
+
+            $correo = new codePassword($random);
+            Mail::to('no-reply@houser.com')->send($correo);
+
+            return response()->json([
+                'message' => 'Email enviado con éxito',
+                'status_code' => 200
+            ], 200);
+
+        }
+    }
+
+    public function setNewPassword(Request $request)
+    {
+        /*  dd(request()->all()); */
+
+        $request->validate([
+            'email' => 'required|email',
+            'verification_code' => 'required|integer',
+            'password' => 'required|min:6'
+        ]);
+
+        $user = Users::where('email', $request->email)->where('verification_code', $request->verification_code)->first();
+
+        /* dd($user); */
+        if (!$user){
+
+            return response()->json([
+                'message' => 'Código/Usuario inválido',
+                'status_code' => 401
+            ], 401);
+
+        } else{
+
+            $user->password =  Hash::make( $request->password );
+            $user->verification_code = null;
+            $user->save();
+
+
+            return response()->json([
+                'message' => 'Se cambió tu contraseña',
+                'status_code' => 200
+            ], 200);
+
+        }
+
+
     }
 
 

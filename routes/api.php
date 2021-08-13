@@ -35,10 +35,10 @@ Route::prefix('auth')
             ->middleware(['auth:sanctum']);
 
         /** Send reset password mail **/
-        Route::post('code-password', 'AuthController@codeVerifyPassword');
+        Route::post('code-password', 'api\\AuthController@codeVerifyPassword');
 
         /** Handle reset password form process **/
-        Route::post('reset/password', 'AuthController@setNewPassword');
+        Route::post('reset/password', 'api\\AuthController@setNewPassword');
 
     });
 

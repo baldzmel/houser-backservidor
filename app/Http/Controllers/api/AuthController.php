@@ -5,8 +5,8 @@ namespace App\Http\Controllers\api;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
-use Illuminate\Foundation\Auth\ResetPasswords;
+//use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
+//use Illuminate\Foundation\Auth\ResetPasswords;
 use Mail;
 use App\Mail\codePassword;
 

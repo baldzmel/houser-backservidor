@@ -16,7 +16,7 @@ class Users extends Authenticatable
     protected $primaryKey = 'id_user';
 
     protected $fillable = ['email', 'password', 'telephone', 'address', 'alt', 'birthday', 'quote', 'name',
-        'lastname', 'avatar', 'portrait', 'fk_level', 'total_rating'];
+        'lastname', 'avatar', 'portrait', 'fk_level', 'total_rating', 'verification_code'];
 
     /**
      * @var array
@@ -69,13 +69,13 @@ class Users extends Authenticatable
         'address.required' => 'Debes ingresar tu domicilio.',
     ];
 
-    /**
-     * Override the mail body for reset password notification mail.
-     */
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new \App\Notifications\MailResetPasswordNotification($token));
-    }
+//    /**
+//     * Override the mail body for reset password notification mail.
+//     */
+//    public function sendPasswordResetNotification($token)
+//    {
+//        $this->notify(new \App\Notifications\MailResetPasswordNotification($token));
+//    }
 
     public function level()
     {

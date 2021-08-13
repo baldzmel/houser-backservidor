@@ -33,7 +33,7 @@ class CreateUserTable extends Migration
             $table->string('alt', 255)->nullable();
             $table->unsignedBigInteger('fk_service')->nullable();
             $table->float('total_rating')->nullable();
-            $table->string('verification_code', 100)->nullable();
+            $table->string('verification_code')->nullable();
             $table->rememberToken();
             $table->timestamps();
 
